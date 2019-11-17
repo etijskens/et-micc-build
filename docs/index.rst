@@ -8,6 +8,7 @@ Welcome to et-micc-build's documentation!
 
    readme
    installation
+   apps
    api
    authors
    history
