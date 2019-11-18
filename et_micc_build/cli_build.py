@@ -3,12 +3,36 @@
 
 import os
 import sys
+import shutil
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
 import click
+import numpy.f2py
 
-import et_micc_tools
+import et_micc_tools.logging_tools
+import et_micc_tools.utils
+
+
+def build_f2py(module_name,args=[]):
+    """
+    :param Path path: to f90 source
+    """
+    src_file = module_name + '.f90'
+
+    path_to_src_file = Path(src_file).resolve()
+    if not path_to_src_file.exists():
+        raise FileNotFoundError(str(path_to_src_file))
+
+    f2py_args = ['--build-dir','_f2py_build']
+    f2py_args .extend(args)
+
+    with open(str(path_to_src_file.name)) as f:
+        fsource = f.read()
+    returncode = numpy.f2py.compile(fsource, extension='.f90', modulename=module_name, extra_args=f2py_args, verbose=True)
+
+    return returncode
 
 def check_cxx_flags(cxx_flags,cli_option):
     """
@@ -20,11 +44,18 @@ def check_cxx_flags(cxx_flags,cli_option):
         # compile options appear between quotes
         pass
     elif not cxx_flags.startswith('"') and not cxx_flags.endswith('"'):
-        # a singlecompile option must still be surrounded with quotes. 
+        # a single compile option must still be surrounded with quotes.
         cxx_flags = f'"{cxx_flags}"'
     else:
         raise RuntimeError(f"{cli_option}: unmatched quotes: {cxx_flags}")
     return cxx_flags
+
+
+def path_to_cmake_tools():
+    """Return the path to the folder with the CMake tools."""
+
+    p = (Path(__file__) / '..' / 'cmake_tools').resolve()
+    return str(p)
 
 
 def check_load_save(filename,loadorsave):
@@ -44,13 +75,13 @@ def check_load_save(filename,loadorsave):
 def micc_build( module_to_build, global_options ):
     """
     Build binary extensions, i.e. f2py modules and cpp modules.
-    
-    :param str module_to_build: name of the only module to build (the prefix 
+
+    :param str module_to_build: name of the only module to build (the prefix
         ``cpp_`` or ``f2py_`` may be omitted). If not provided, all binrary
         extensions are built.
     :param types.SimpleNamespace global_options: namespace object with
-        options accepted by (almost) all et_micc commands. Relevant attributes are 
-        
+        options accepted by (almost) all et_micc commands. Relevant attributes are
+
         * **verbosity**
         * **project_path**: Path to the project on which the command operates.
         * **build_options**: all build options.
@@ -60,17 +91,17 @@ def micc_build( module_to_build, global_options ):
     et_micc_tools.utils.is_project_directory(project_path, raise_if=False)
     et_micc_tools.utils.is_package_project  (project_path, raise_if=False)
     et_micc_tools.utils.is_module_project   (project_path, raise_if=True )
-    
+
     build_options = global_options.build_options
-    
+
     package_path = project_path / et_micc_tools.utils.convert_to_valid_module_name(project_path.name)
-        
+
     # get extension for binary extensions (depends on OS and python version)
     extension_suffix = et_micc_tools.utils.get_extension_suffix()
-    
+
     dirs = os.listdir(package_path)
     for d in dirs:
-        if (     (package_path / d).is_dir() 
+        if (     (package_path / d).is_dir()
              and (d.startswith("f2py_") or d.startswith("cpp_"))
            ):
             if module_to_build and not d.endswith(module_to_build): # build only this module
@@ -78,19 +109,19 @@ def micc_build( module_to_build, global_options ):
 
             build_log_file = project_path / f"et_micc-build-{d}.log"
             build_logger = et_micc_tools.logging_tools.create_logger( build_log_file, filemode='w' )
- 
+
             module_type,module_name = d.split('_',1)
-            
+
             with et_micc_tools.logging_tools.log(build_logger.info,f"Building {module_type} module {module_name}"):
                 cextension = module_name + extension_suffix
                 destination = (package_path / cextension).resolve()
                 if build_options.clean:
                     os.remove(str(destination))
-                module_dir = package_path / d 
+                module_dir = package_path / d
                 if build_options.save:
                     with open(str(module_dir / build_options.save),'w') as f:
                         json.dump(build_options.f2py,f)
-                
+
                 if module_type=='f2py':
                     if build_options.load:
                         with open(str(module_dir / build_options.save),'r') as f:
@@ -110,9 +141,9 @@ def micc_build( module_to_build, global_options ):
                     with et_micc_tools.utils.in_directory(module_dir):
                         if build_options.clean:
                             build_logger.info(f"--clean: removing {d}/_f2py_build")
-                            shutil.rmtree('_f2py_build') 
+                            shutil.rmtree('_f2py_build')
                         returncode = build_f2py(module_name, args=f2py_args)
-                    
+
                 elif module_type=='cpp':
                     if build_options.load:
                         with open(str(module_dir / build_options.save),'r') as f:
@@ -120,10 +151,10 @@ def micc_build( module_to_build, global_options ):
                     build_dir = module_dir  / '_cmake_build'
                     if build_options.clean:
                         build_logger.info(f"--clean: removing {d}/_cmake_build")
-                        shutil.rmtree(build_dir) 
+                        shutil.rmtree(build_dir)
                     build_dir.mkdir(parents=True, exist_ok=True)
                     with et_micc_tools.utils.in_directory(build_dir):
-                        cmake_cmd = ['poetry','run','cmake','-D',f"pybind11_DIR={et_micc_tools.utils.path_to_cmake_tools()}"]
+                        cmake_cmd = ['poetry','run','cmake','-D',f"pybind11_DIR={path_to_cmake_tools()}"]
                         for key,val in build_options.cmake.items():
                             cmake_cmd.extend(['-D',f"{key}={val}"])
                         cmake_cmd.append('..')
@@ -132,40 +163,40 @@ def micc_build( module_to_build, global_options ):
                                ]
                         # WARNING: for these commands to work in eclipse, eclipse must have
                         # started from the shell with the appropriate environment activated.
-                        # Otherwise subprocess starts out with the wrong environment. It 
+                        # Otherwise subprocess starts out with the wrong environment. It
                         # may not pick the right Python version, and may not find pybind11.
                         returncode = et_micc_tools.utils.execute(cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy())
                 else:
                     raise RuntimeError(f"Unknown module_type: {module_type}")
 
                 if returncode:
-                    return returncode 
-                
+                    return returncode
+
                 built = build_dir / cextension
                 destination = (package_path / cextension).resolve()
                 if build_options.soft_link:
                     cmds = ['ln', '-sf', str(built), str(destination)]
                     returncode = et_micc_tools.utils.execute(cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy())
                     if returncode:
-                        return returncode 
+                        return returncode
                 else:
                     if destination.exists():
                         build_logger.debug(f">>> os.remove({destination})\n")
                         destination.unlink()
                     build_logger.debug(f">>> shutil.copyfile( '{built}', '{destination}' )\n")
                     shutil.copyfile(built, destination)
-                
+
                     # Remove the build directory to avoid that it will be included in the wheel
-                    # (we cannot do this if build_options.soft_link is True 
+                    # (we cannot do this if build_options.soft_link is True
                     if module_type=='f2py':
                         build_dir = module_dir / '_f2py_build'
-                    shutil.rmtree(build_dir) 
-                
+                    shutil.rmtree(build_dir)
+
             build_logger.info(f"Built: {destination}\n"
                               f"Check {build_log_file} for details."
                              )
-    
-    
+
+
     return 0
 
 
@@ -203,11 +234,11 @@ def micc_build( module_to_build, global_options ):
              )
 @click.option('--opt'
              , help="F2py: Specify optimization flags."
-             , default='' 
+             , default=''
              )
 @click.option('--arch'
              , help="F2py: Specify architecture specific optimization flags."
-             , default='' 
+             , default=''
              )
 @click.option('--debug'
              , help="F2py: Compile with debugging information."
@@ -254,7 +285,7 @@ def micc_build( module_to_build, global_options ):
              )
 def main(
         verbosity,
-        project_path
+        project_path,
         module,
         build_type,
 # F2py specific options
@@ -282,10 +313,13 @@ def main(
             raise RuntimeError(f"--load {load}: only filename allowed, not path.")
         if not load.endswith('.json'):
             load += '.json'
-    
-    global_options = SimpleNamespace(verbosity=verbosity,project_path=project_path)
-    
-    with et_micc_tools.logging_tools.logtime(global_options):            
+
+    global_options = SimpleNamespace(verbosity=verbosity,
+                                     project_path=project_path.resolve( ),
+                                     clear_log = False
+                                    )
+
+    with et_micc_tools.logging_tools.logtime(global_options):
         build_options = SimpleNamespace( build_type = build_type.upper() )
         build_options.clean = clean
         build_options.soft_link = soft_link
@@ -314,7 +348,7 @@ def main(
                 if debug:
                     f2py['--debug'] = None
             build_options.f2py = f2py
-    
+
             cmake = {}
             cmake['CMAKE_BUILD_TYPE'] = build_type
             if cxx_compiler:
@@ -327,13 +361,12 @@ def main(
             if cxx_flags_all:
                 cmake["CMAKE_CXX_FLAGS"] = check_cxx_flags(cxx_flags_all,"--cxx-flags-all")
             build_options.cmake = cmake
-            
-        ctx.obj.build_options = build_options
-        
+
+        global_options.build_options = build_options
+
         rc = micc_build(module_to_build=module, global_options=global_options)
-        
-    if rc:
-        ctx.exit(rc)
+
+    sys.exit(rc)
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
