@@ -3,10 +3,9 @@ History
 *******
 
 
-v0.0.0 (2019-11-17)
-===============================================
+v0.1.0 (2019-11-17)
+===================
 
-Development start:
+* OOP version of ``micc-build``.
+
 This package was created with `micc <https://github.com/etijskens/micc>`_,
-using the project template
-`micc/micc-module <https://github.com/audreyr/cookiecutter-pypackage>`_.
