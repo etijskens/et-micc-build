@@ -8,4 +8,4 @@ Top-level package for et_micc_build.
 """
 import et_micc_build.cli_micc_build
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
