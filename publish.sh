@@ -8,7 +8,7 @@ git commit -a -u -m "publish to PyPI"
 git push -u origin master
 echo "If there are untracked files that need to be published,"
 echo " 1. stop the script (by entering 'n')"
-echo " 2. `git add` the files"
+echo " 2. 'git add' the files"
 echo " 3. rerun this script."
 
 read -p "Continue? " -n 1 -r
@@ -22,7 +22,7 @@ then
 	git push -u origin master
 	echo "If there are untracked files that need to be published,"
 	echo " 1. stop the script (by entering 'n')"
-	echo " 2. `git add` the files"
+	echo " 2. 'git add' the files"
 	echo " 3. rerun this script."
 
 	read -p "Continue? " -n 1 -r
