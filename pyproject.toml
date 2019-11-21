@@ -16,7 +16,7 @@ keywords = ['packaging', 'poetry']
 python = "^3.7"
 numpy = "^1.17.0"
 pybind11 = "^2.2.4"
-    cmake = "^3.15.3"
+cmake = "^3.15.3"
 et-micc = "0.9.15"
 
 [tool.poetry.dev-dependencies]
