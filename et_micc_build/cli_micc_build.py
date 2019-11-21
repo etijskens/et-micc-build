@@ -205,11 +205,11 @@ def build_cmd(project):
                         build_dir = module_dir / '_f2py_build'
                     shutil.rmtree(build_dir)
 
-            summary.append(destination)
-            build_logger.info(
-                f"Built: {destination}\n"
-                f"Check {build_log_file} for details."
-            )
+                summary.append(destination)
+                build_logger.info(
+                    f"Built: {destination}\n"
+                    f"Check {build_log_file} for details."
+                )
     
     if summary:
         build_logger.info("\nBinary extensions built successfully:")
