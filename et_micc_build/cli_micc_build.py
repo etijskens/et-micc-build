@@ -107,7 +107,7 @@ def build_cmd(project):
 
     package_path = project.options.project_path / project.package_name
     dirs = os.listdir(package_path)
-    counter = 0
+    summary = []
     for d in dirs:
         if (     (package_path / d).is_dir()
              and (d.startswith("f2py_") or d.startswith("cpp_"))
@@ -116,7 +116,6 @@ def build_cmd(project):
                 # build only  module module_to_build.
                 continue
             
-            counter += 1
             build_log_file = project_path / f"et_micc-build-{d}.log"
             build_logger = et_micc.logging.create_logger( build_log_file, filemode='w' )
 
@@ -206,10 +205,17 @@ def build_cmd(project):
                         build_dir = module_dir / '_f2py_build'
                     shutil.rmtree(build_dir)
 
-            build_logger.info(f"Built: {destination}\n"
-                              f"Check {build_log_file} for details."
-                             )
-    if counter==0:
+            summary.append(destination)
+            build_logger.info(
+                f"Built: {destination}\n"
+                f"Check {build_log_file} for details."
+            )
+    
+    if summary:
+        build_logger.info("\nBinary extensions built successfully:")
+        for destination in summary:
+            build_logger.info(f"  - {destination}")
+    else:
         project.warning(
             f"No binary extensions found in package ({project.package_name})."
         )
