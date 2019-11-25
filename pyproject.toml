@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "et-micc-build"
-version = "0.9.20"
+version = "0.9.21"
 description = "CLI micc-build and module for building binary extensions created with micc."
 authors = ["Engelbert Tijskens <engelbert.tijskens@uantwerpen.be>"]
 license = "MIT"
