@@ -106,7 +106,8 @@ def build_cmd(project):
 
     package_path = project.options.project_path / project.package_name
     dirs = os.listdir(package_path)
-    summary = []
+    succeeded = []
+    failed    = []
     for d in dirs:
         if (     (package_path / d).is_dir()
              and (d.startswith("f2py_") or d.startswith("cpp_"))
@@ -177,43 +178,39 @@ def build_cmd(project):
                         # vated. Otherwise subprocess starts out with the wrong environment. 
                         # It may not pick the right Python version, and may not find pybind11.
                         project.exit_code = et_micc.utils.execute(cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy())
-                        
-                else:
-                    raise RuntimeError(f"Unknown module_type: {module_type}")
 
                 if project.exit_code:
-                    return 
-
-                built = build_dir / cextension
-                destination = (package_path / cextension).resolve()
-                if build_options.soft_link:
-                    cmds = ['ln', '-sf', str(built), str(destination)]
-                    returncode = et_micc.utils.execute(cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy())
-                    if returncode:
-                        return returncode
+                    failed.append(project.options.project_path.name / project.package_name / cextension)
                 else:
-                    if destination.exists():
-                        build_logger.debug(f">>> os.remove({destination})\n")
-                        destination.unlink()
-                    build_logger.debug(f">>> shutil.copyfile( '{built}', '{destination}' )\n")
-                    shutil.copyfile(built, destination)
-
-                    # Remove the build directory to avoid that it will be included in the wheel
-                    # (we cannot do this if build_options.soft_link is True
-                    if module_type=='f2py':
-                        build_dir = module_dir / '_f2py_build'
-                    shutil.rmtree(build_dir)
-
-                summary.append(destination)
-                build_logger.info(
-                    f"Built: {destination}\n"
-                    f"Check {build_log_file} for details."
-                )
+                    built = build_dir / cextension
+                    destination = (package_path / cextension).resolve()
+                    if build_options.soft_link:
+                        cmds = ['ln', '-sf', str(built), str(destination)]
+                        returncode = et_micc.utils.execute(cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy())
+                        if returncode:
+                            failed.append(project.options.project_path.name / project.package_name / cextension)
+                    else:
+                        if destination.exists():
+                            build_logger.debug(f">>> os.remove({destination})\n")
+                            destination.unlink()
+                        build_logger.debug(f">>> shutil.copyfile( '{built}', '{destination}' )\n")
+                        shutil.copyfile(built, destination)
     
-    if summary:
-        build_logger.info("\nBinary extensions built successfully:")
-        for destination in summary:
-            build_logger.info(f"  - {destination}")
+                        # Remove the build directory to avoid that it will be included in the wheel
+                        # (we cannot do this if build_options.soft_link is True
+                        if module_type=='f2py':
+                            build_dir = module_dir / '_f2py_build'
+                        shutil.rmtree(build_dir)
+
+                    succeeded.append(project.options.project_path.name / project.package_name / cextension)
+    if succeeded:
+        build_logger.info("\n\nBinary extensions built successfully:")
+        for cextension in succeeded:
+            build_logger.info(f"  - {cextension}")
+    if failed:
+        build_logger.error("\nBinary extensions failing to build:")
+        for cextension in failed:
+            build_logger.error(f"  - {cextension}")
     else:
         project.warning(
             f"No binary extensions found in package ({project.package_name})."
