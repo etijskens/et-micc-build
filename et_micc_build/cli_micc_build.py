@@ -213,7 +213,7 @@ def build_cmd(project):
         for cextension in failed:
             location = os.sep.join([project.options.project_path.name, project.package_name, cextension])
             build_logger.error(f"  - {location}")
-    else:
+    if not succeeded and not failed:
         project.warning(
             f"No binary extensions found in package ({project.package_name})."
         )
