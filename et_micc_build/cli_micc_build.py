@@ -180,7 +180,7 @@ def build_cmd(project):
                         project.exit_code = et_micc.utils.execute(cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy())
 
                 if project.exit_code:
-                    failed.append(project.options.project_path.name / project.package_name / cextension)
+                    failed.append(cextension)
                 else:
                     built = build_dir / cextension
                     destination = (package_path / cextension).resolve()
@@ -188,7 +188,7 @@ def build_cmd(project):
                         cmds = ['ln', '-sf', str(built), str(destination)]
                         returncode = et_micc.utils.execute(cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy())
                         if returncode:
-                            failed.append(project.options.project_path.name / project.package_name / cextension)
+                            failed.append(cextension)
                     else:
                         if destination.exists():
                             build_logger.debug(f">>> os.remove({destination})\n")
@@ -202,15 +202,17 @@ def build_cmd(project):
                             build_dir = module_dir / '_f2py_build'
                         shutil.rmtree(build_dir)
 
-                    succeeded.append(project.options.project_path.name / project.package_name / cextension)
+                    succeeded.append(cextension)
     if succeeded:
         build_logger.info("\n\nBinary extensions built successfully:")
         for cextension in succeeded:
-            build_logger.info(f"  - {cextension}")
+            location = os.sep.join([project.options.project_path.name, project.package_name, cextension])
+            build_logger.info(f"  - {location}")
     if failed:
         build_logger.error("\nBinary extensions failing to build:")
         for cextension in failed:
-            build_logger.error(f"  - {cextension}")
+            location = os.sep.join([project.options.project_path.name, project.package_name, cextension])
+            build_logger.error(f"  - {location}")
     else:
         project.warning(
             f"No binary extensions found in package ({project.package_name})."
