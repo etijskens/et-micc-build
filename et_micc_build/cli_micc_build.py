@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import click
 import numpy.f2py
 
-from et_micc.project import Project
+from et_micc.project import Project, micc_version
 import et_micc.logging
 import et_micc.utils
 
@@ -303,6 +303,7 @@ def build_cmd(project):
              , help="Create a soft link rather than a copy of the binary extension module."
              , default=False, is_flag=True
              )
+@click.version_option(version=micc_version())
 def main(
         verbosity,
         project_path,
