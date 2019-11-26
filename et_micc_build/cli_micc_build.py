@@ -62,7 +62,6 @@ def path_to_cmake_tools():
     """Return the path to the folder with the CMake tools."""
 
     p = (Path(__file__) / '..' / 'cmake_tools').resolve()
-    print('###',p)
     return str(p)
 
 

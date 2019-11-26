@@ -58,12 +58,10 @@
 #   CMAKE_DISABLE_FIND_PACKAGE_pybind11 - CMake variable, disables
 #     find_package(pybind11) when not REQUIRED, perhaps to force internal build
 
-
-####### Expanded from @PACKAGE_INIT@ by configure_package_config_file() #######
-####### Any changes to this file will be overwritten by the next CMake run ####
-####### The input file was pybind11Config.cmake.in                            ########
-
 get_filename_component(PACKAGE_PREFIX_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+get_filename_component(PYTHON_VERSION ${PACKAGE_PREFIX_DIR} NAME)
+#message("*** PACKAGE_PREFIX_DIR=${PACKAGE_PREFIX_DIR}")
+#message("*** PYTHON_VERSION=${PYTHON_VERSION}")
 
 macro(set_and_check _var _file)
   set(${_var} "${_file}")
@@ -74,6 +72,7 @@ endmacro()
 
 macro(check_required_components _NAME)
   foreach(comp ${${_NAME}_FIND_COMPONENTS})
+    message("*** checking ${comp}")
     if(NOT ${_NAME}_${comp}_FOUND)
       if(${_NAME}_FIND_REQUIRED_${comp})
         set(${_NAME}_FOUND FALSE)
@@ -87,8 +86,8 @@ endmacro()
 set(PN pybind11)
 
 # location of pybind11/pybind11.h
-set(${PN}_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/include/python3.7m")
-
+set(${PN}_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/../../include/site/${PYTHON_VERSION}")
+#message("*** ${PN}_INCLUDE_DIR=${${PN}_INCLUDE_DIR}")
 set(${PN}_LIBRARY "")
 set(${PN}_DEFINITIONS USING_${PN})
 
@@ -106,8 +105,8 @@ if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
 #-----------------------------------------------------------------------------
 if(NOT TARGET ${PN}::pybind11)
     include("${CMAKE_CURRENT_LIST_DIR}/${PN}Targets.cmake")
-
     find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION} MODULE REQUIRED)
+
     set_property(TARGET ${PN}::pybind11 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
     set_property(TARGET ${PN}::embed APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES})
     if(WIN32 OR CYGWIN)
