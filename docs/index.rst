@@ -1,6 +1,6 @@
-###########################################################
+#########################################
 Welcome to et-micc-build's documentation!
-###########################################################
+#########################################
 
 .. toctree::
    :maxdepth: 2
@@ -11,7 +11,6 @@ Welcome to et-micc-build's documentation!
    apps
    api
    authors
-   history
 
 ##################
 Indices and tables

@@ -4,48 +4,23 @@
 Installation
 ************
 
+Contrary to `micc <https://github.com/etijskens/et-micc>`_, 
+`micc-build <https://github.com/etijskens/et-micc>`_ is automatically a dependency 
+of any micc_ project with binary extension modules. So, you just run ``poetry install`` 
+in the project's directory to install it in the current Python environment:
 
-Stable release
-==============
+.. code-block:: bash
 
-To install et-micc-build, run this command in your terminal:
+   $ cd path/to/my_micc_project_with_binary_extension_modules
+   $ poetry install 
+   ... # all dependencies are installed in a virtual environment venv
+   $ venv/bin/activate 
+   (venv) $ micc-build
+   ... # the binary extension modules are built.
+   
+.. note::
 
-.. code-block:: console
-
-    $ pip install et_micc_build
-
-This is the preferred method to install et-micc-build, as it will always install the most recent stable release.
-
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide
-you through the process.
-
-.. _pip: https://pip.pypa.io
-.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
-
-
-From sources
-============
-
-The sources for et-micc-build can be downloaded from the `Github repo`_.
-
-You can either clone the public repository:
-
-.. code-block:: console
-
-    $ git clone git://github.com/etijskens/et_micc_build
-
-Or download the `tarball`_:
-
-.. code-block:: console
-
-    $ curl  -OL https://github.com/etijskens/et_micc_build/tarball/master
-
-Once you have a copy of the source, you can install it with:
-
-.. code-block:: console
-
-    $ python setup.py install
-
-
-.. _Github repo: https://github.com/etijskens/et_micc_build
-.. _tarball: https://github.com/etijskens/et_micc_build/tarball/master
+   It is assumed that the Fortran and/or C++ compilers, whichever you need, are 
+   just on the system path. They are not a dependency of the project, as users may 
+   choose to compile with different compilers, Furthermore, compilers vary between 
+   OSes anyway.

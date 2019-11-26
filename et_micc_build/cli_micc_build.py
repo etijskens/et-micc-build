@@ -235,7 +235,7 @@ def build_cmd(project):
              , default=''
              )
 @click.option('-b','--build-type'
-             , help="build type: For f2py modules, either RELEASE or DEBUG, where the latter"
+             , help="build type: For f2py modules, either RELEASE or DEBUG, where the latter "
                     "toggles the --debug, --noopt, and --noarch, and ignores all other "
                     "f2py compile flags. For cpp modules any of the standard CMake build types: "
                     "DEBUG, MINSIZEREL, RELEASE, RELWITHDEBINFO."

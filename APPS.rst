@@ -1,7 +1,8 @@
 ************
 Applications
 ************
-.. click:: et_micc_build.cli_build:main
+
+.. click:: et_micc_build.cli_micc_build:main
    :prog: build
    :show-nested:
 
