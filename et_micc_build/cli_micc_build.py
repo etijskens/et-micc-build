@@ -32,8 +32,12 @@ def build_f2py(module_name,args=[]):
     if not path_to_src_file.exists():
         raise FileNotFoundError(str(path_to_src_file))
 
-    f2py_args = ['--build-dir','_f2py_build']
-    f2py_args .extend(args)
+    f2py_args = [
+        '-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION',
+        '-DF2PY_REPORT_ON_ARRAY_COPY=1',
+        '--build-dir','_f2py_build',
+    ]
+    f2py_args.extend(args)
 
     with open(str(path_to_src_file.name)) as f:
         fsource = f.read()
@@ -128,13 +132,15 @@ def build_cmd(project):
                     os.remove(str(destination))
                 module_dir = package_path / d
                 if build_options.save:
-                    with open(str(module_dir / build_options.save),'w') as f:
+                    with open(str(module_dir / build_options.save), 'w') as f:
                         json.dump(build_options.f2py,f)
 
                 if module_type=='f2py':
                     if build_options.load:
-                        with open(str(module_dir / build_options.save),'r') as f:
-                            build_options.f2py = json.load(f)
+                        path_to_load = module_dir / build_options.load
+                        if path_to_load.exists():
+                            with open(str(path_to_load),'r') as f:
+                                build_options.f2py = json.load(f)
                     build_dir = module_dir
                     f2py_args = []
                     for arg,val in build_options.f2py.items():
@@ -336,7 +342,7 @@ def main(
     options = SimpleNamespace(
         verbosity=verbosity,
         project_path=project_path.resolve(),
-        clear_log = False
+        clear_log = False,
     )
     project = Project(options)
     with et_micc.logging.logtime(options):

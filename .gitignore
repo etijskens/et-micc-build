@@ -117,3 +117,7 @@ _f2py_build/
 
 # backup files
 *.bak
+
+# PyCharm
+.idea/
+
