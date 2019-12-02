@@ -121,11 +121,11 @@ def build_cmd(project):
                 continue
             
             build_log_file = project_path / f"et_micc-build-{d}.log"
-            build_logger = et_micc.logging.create_logger( build_log_file, filemode='w' )
+            build_logger = et_micc.logger.create_logger( build_log_file, filemode='w' )
 
             module_type,module_name = d.split('_',1)
 
-            with et_micc.logging.log(build_logger.info,f"Building {module_type} module {module_name}"):
+            with et_micc.logger.log(build_logger.info,f"Building {module_type} module {module_name}"):
                 cextension = module_name + extension_suffix
                 destination = (package_path / cextension).resolve()
                 if build_options.clean:
@@ -345,7 +345,7 @@ def main(
         clear_log = False,
     )
     project = Project(options)
-    with et_micc.logging.logtime(options):
+    with et_micc.logger.logtime(options):
         build_options = SimpleNamespace( build_type = build_type.upper() )
         build_options.clean = clean
         build_options.soft_link = soft_link
