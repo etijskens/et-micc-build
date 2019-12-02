@@ -188,7 +188,6 @@ def build_binary_extension(options):
                 exit_code = et_micc.utils.execute(
                     cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy()
                 )
-                print("###", exit_code)
                 if exit_code == 0:
                     built = output_dir / binary_extension
                     if destination.exists():
@@ -198,7 +197,6 @@ def build_binary_extension(options):
                     built = shutil.move(built,
                                         options.module_srcdir_path / binary_extension)  # move returns destination
                     shutil.rmtree(build_dir)
-                print("###", built)
 
         cmds = ['ln', '-sf', str(built), str(destination)]
         et_micc.utils.execute(
