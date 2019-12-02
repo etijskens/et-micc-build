@@ -13,7 +13,7 @@ import click
 import numpy.f2py
 
 from et_micc.project import Project, micc_version
-import et_micc.logging
+import et_micc.logger
 import et_micc.utils
 
 
