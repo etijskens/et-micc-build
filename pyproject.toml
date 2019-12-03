@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "et-micc-build"
-version = "0.9.43"
+version = "0.9.44"
 description = "CLI micc-build and module for building binary extensions created with micc."
 authors = ["Engelbert Tijskens <engelbert.tijskens@uantwerpen.be>"]
 license = "MIT"
@@ -17,7 +17,7 @@ python = "^3.7"
 numpy = "^1.17.0"
 pybind11 = "^2.2.4"
 #cmake = "^3.13.3"
-et-micc = "0.9.43"
+et-micc = "0.9.44"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.4.2"
