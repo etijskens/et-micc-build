@@ -207,7 +207,11 @@ def build_binary_extension(options):
             with open(str(options.module_srcdir_path / build_options.save), 'w') as f:
                 json.dump(build_options.build_tool_options, f)
 
-    return exit_code
+    msg = ("[ERROR]\n"
+           "    Binary extension module 'bar{get_extension_suffix}' could not be build.\n"
+           "    Any attempt to use it will raise exceptions.\n"
+           ) if exit_code else ""
+    return msg
 
 
 def build_cmd(project):
