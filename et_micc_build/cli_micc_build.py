@@ -4,6 +4,7 @@
 import json
 from pathlib import Path
 import os
+import platform
 import shutil
 import sys
 import sysconfig
@@ -99,7 +100,7 @@ def auto_build_binary_extension(package_path, module_to_build):
         build_options=SimpleNamespace(
             clean=False,
             save="",
-            load="build_options.json",
+            load="build_options",
             soft_link=True,
         ),
         verbosity=1,
@@ -133,6 +134,14 @@ def build_binary_extension(options):
     extension_suffix = get_extension_suffix()
 
     build_options = options.build_options
+    if build_options.save:
+        build_options.save = build_options.save.replace(f".{platform.system()}", "").replace(".json", "")
+        build_options.save += f".{platform.system()}.json"
+
+    if build_options.load:
+        build_options.load = build_options.save.replace(f".{platform.system()}", "").replace(".json", "")
+        build_options.load += f".{platform.system()}.json"
+
     build_log_file = options.module_srcdir_path / "micc-build.log"
     build_logger = et_micc.logger.create_logger(build_log_file, filemode='w')
     with et_micc.logger.log(build_logger.info, f"Building {options.module_kind} module '{options.module_name}':"):
@@ -149,7 +158,7 @@ def build_binary_extension(options):
         if build_options.load:
             path_to_load = options.module_srcdir_path / build_options.load
             if path_to_load.exists():
-                build_logger.info(f"Loading build options from {path_to_load}")
+                build_options.save build_logger.info(f"Loading build options from {path_to_load}")
                 with open(str(path_to_load), 'r') as f:
                     build_options.build_tool_options = json.load(f)
             else:
@@ -355,12 +364,12 @@ def build_cmd(project):
     , default=False, is_flag=True
               )
 @click.option('--load'
-    , help="Load the build options from a (.json) file in the module directory. "
+    , help="Load the build options from a f'.{platform.system()}.json' file in the module directory. "
            "All other compile options are ignored."
     , default=''
               )
 @click.option('--save'
-    , help="Save the build options to a (.json) file in the module directory."
+    , help="Save the build options to a f'.{platform.system()}.json' file in the module directory."
     , default=''
               )
 @click.option('-s', '--soft-link'
