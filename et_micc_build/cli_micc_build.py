@@ -86,7 +86,8 @@ def check_load_save(filename, loadorsave):
 
 
 def auto_build_binary_extension(package_path, module_to_build):
-    """Build a binary extension *module_to_build* in *package_path*.
+    """Set options for building binary extensions, and build
+    binary extension *module_to_build* in *package_path*.
 
     :param Path package_path:
     :param str module_to_build:
@@ -112,12 +113,18 @@ def auto_build_binary_extension(package_path, module_to_build):
             break
     else:
         raise ValueError(f"No binary extension source directory found for module '{module_to_build}'.")
+
     exit_code = build_binary_extension(options)
-    return exit_code
+
+    msg = ("[ERROR]\n"
+           "    Binary extension module 'bar{get_extension_suffix}' could not be build.\n"
+           "    Any attempt to use it will raise exceptions.\n"
+           ) if exit_code else ""
+    return msg
 
 
 def build_binary_extension(options):
-    """
+    """Build a binary extension described by *options*.
 
     :param options:
     :return:
@@ -126,7 +133,6 @@ def build_binary_extension(options):
     extension_suffix = get_extension_suffix()
 
     build_options = options.build_options
-
     build_log_file = options.module_srcdir_path / "micc-build.log"
     build_logger = et_micc.logger.create_logger(build_log_file, filemode='w')
     with et_micc.logger.log(build_logger.info, f"Building {options.module_kind} module '{options.module_name}':"):
@@ -143,8 +149,11 @@ def build_binary_extension(options):
         if build_options.load:
             path_to_load = options.module_srcdir_path / build_options.load
             if path_to_load.exists():
+                build_logger.info(f"Loading build options from {path_to_load}")
                 with open(str(path_to_load), 'r') as f:
                     build_options.build_tool_options = json.load(f)
+            else:
+                build_logger.info(f"Building using default build options.")
 
         if options.module_kind == 'f2py':
             f2py_args = []
@@ -207,12 +216,7 @@ def build_binary_extension(options):
             with open(str(options.module_srcdir_path / build_options.save), 'w') as f:
                 json.dump(build_options.build_tool_options, f)
 
-    msg = ("[ERROR]\n"
-           "    Binary extension module 'bar{get_extension_suffix}' could not be build.\n"
-           "    Any attempt to use it will raise exceptions.\n"
-           ) if exit_code else ""
-    return msg
-
+    return exit_code
 
 def build_cmd(project):
     """
@@ -251,9 +255,14 @@ def build_cmd(project):
                 # build only module module_to_build.
                 continue
 
-            module_type, module_name = d.split('_', 1)
+            module_kind, module_name = d.split('_', 1)
             binary_extension = package_path / (module_name + extension_suffix)
-            exit_code = auto_build_binary_extension(package_path, module_name)
+            project.options.module_srcdir_path = package_path / d
+            project.options.module_kind = module_kind
+            project.options.module_name = module_name
+            project.options.package_path = package_path
+            project.options.build_options.build_tool_options = getattr(project.options.build_options, module_kind)
+            exit_code = build_binary_extension(project.options)
 
             if project.exit_code:
                 failed.append(binary_extension)
@@ -426,18 +435,18 @@ def main(
                     f2py['--debug'] = None
             build_options.f2py = f2py
 
-            cmake = {}
-            cmake['CMAKE_BUILD_TYPE'] = build_type
+            cpp = {}
+            cpp['CMAKE_BUILD_TYPE'] = build_type
             if cxx_compiler:
                 path_to_cxx_compiler = Path(cxx_compiler).resolve()
                 if not path_to_cxx_compiler.exists():
                     raise FileNotFoundError(f"C++ compiler {path_to_cxx_compiler} not found.")
-                cmake['CMAKE_CXX_COMPILER'] = str(path_to_cxx_compiler)
+                cpp['CMAKE_CXX_COMPILER'] = str(path_to_cxx_compiler)
             if cxx_flags:
-                cmake[f"CMAKE_CXX_FLAGS_{build_type}"] = check_cxx_flags(cxx_flags, "--cxx-flags")
+                cpp[f"CMAKE_CXX_FLAGS_{build_type}"] = check_cxx_flags(cxx_flags, "--cxx-flags")
             if cxx_flags_all:
-                cmake["CMAKE_CXX_FLAGS"] = check_cxx_flags(cxx_flags_all, "--cxx-flags-all")
-            build_options.cmake = cmake
+                cpp["CMAKE_CXX_FLAGS"] = check_cxx_flags(cxx_flags_all, "--cxx-flags-all")
+            build_options.cpp = cpp
 
         project.options.module_to_build = module
         project.options.build_options = build_options
