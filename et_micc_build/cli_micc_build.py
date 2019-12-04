@@ -158,7 +158,7 @@ def build_binary_extension(options):
         if build_options.load:
             path_to_load = options.module_srcdir_path / build_options.load
             if path_to_load.exists():
-                build_options.save build_logger.info(f"Loading build options from {path_to_load}")
+                build_logger.info(f"Loading build options from {path_to_load}")
                 with open(str(path_to_load), 'r') as f:
                     build_options.build_tool_options = json.load(f)
             else:

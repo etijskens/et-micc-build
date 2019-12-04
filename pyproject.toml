@@ -18,6 +18,7 @@ numpy = "^1.17.0"
 pybind11 = "^2.2.4"
 #cmake = "^3.13.3"
 et-micc = "0.10.3"
+cmake = "^3.15.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.4.2"
