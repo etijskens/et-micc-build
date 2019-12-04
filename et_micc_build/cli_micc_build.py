@@ -278,7 +278,7 @@ def build_cmd(project):
                 failed.append(binary_extension)
             else:
                 succeeded.append(binary_extension)
-    build_logger = project.micc_logger
+    build_logger = project.logger
     if succeeded:
         build_logger.info("\n\nBinary extensions built successfully:")
         for binary_extension in succeeded:
