@@ -223,7 +223,7 @@ def build_binary_extension(options):
             )
 
         if build_options.save:
-            with open(str(options.module_srcdir_path / build_options.save), 'w') as f:
+            with (options.module_srcdir_path / build_options.save).open('w') as f:
                 json.dump(build_options.build_tool_options, f)
 
     return exit_code
