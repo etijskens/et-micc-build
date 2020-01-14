@@ -272,7 +272,7 @@ def build_cmd(project):
             project.options.module_name = module_name
             project.options.package_path = package_path
             project.options.build_options.build_tool_options = getattr(project.options.build_options, module_kind)
-            exit_code = build_binary_extension(project.options)
+            project.exit_code = build_binary_extension(project.options)
 
             if project.exit_code:
                 failed.append(binary_extension)
