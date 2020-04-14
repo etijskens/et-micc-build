@@ -27,6 +27,9 @@ def build_f2py(module_name, args=[]):
     """
     :param Path path: to f90 source
     """
+    so_file = Path(module_name+get_extension_suffix())
+    so_file.unlink()
+
     src_file = module_name + '.f90'
 
     path_to_src_file = Path(src_file).resolve()
@@ -141,6 +144,11 @@ def build_binary_extension(options):
     if build_options.load:
         build_options.load = build_options.save.replace(f".{platform.system()}", "").replace(".json", "")
         build_options.load += f".{platform.system()}.json"
+
+    # Remove so file to avoid "RuntimeError: Symlink loop from ..."
+    so_file = options.package_path / (options.module_name + extension_suffix)
+    # print(so_file)
+    so_file.unlink()
 
     build_log_file = options.module_srcdir_path / "micc-build.log"
     build_logger = et_micc.logger.create_logger(build_log_file, filemode='w')
