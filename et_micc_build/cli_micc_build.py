@@ -147,7 +147,10 @@ def build_binary_extension(options):
 
     # Remove so file to avoid "RuntimeError: Symlink loop from ..."
     so_file = options.package_path / (options.module_name + extension_suffix)
-    so_file.unlink(missing_ok=True)
+    try:
+        so_file.unlink() # missing_ok=True only available from 3.8 on, not in 3.7
+    except FileNotFoundError:
+        pass
 
     build_log_file = options.module_srcdir_path / "micc-build.log"
     build_logger = et_micc.logger.create_logger(build_log_file, filemode='w')
