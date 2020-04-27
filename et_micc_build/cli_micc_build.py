@@ -28,7 +28,6 @@ def build_f2py(module_name, args=[]):
     :param Path path: to f90 source
     """
     so_file = Path(module_name+get_extension_suffix())
-    so_file.unlink()
 
     src_file = module_name + '.f90'
 
