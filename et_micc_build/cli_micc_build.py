@@ -354,19 +354,19 @@ def build_cmd(project):
     , help="F2py: Compile without architecture specific optimization."
     , default=False, is_flag=True
               )
-# Cpp specific options
-@click.option('--cxx-compiler'
-    , help="CMake: specify the C++ compiler (sets CMAKE_CXX_COMPILER)."
-    , default=''
-              )
-@click.option('--cxx-flags'
-    , help="CMake: set CMAKE_CXX_FLAGS_<built_type> to <cxx_flags>."
-    , default=''
-              )
-@click.option('--cxx-flags-all'
-    , help="CMake: set CMAKE_CXX_FLAGS_<built_type> to <cxx_flags>."
-    , default=''
-              )
+# Cpp specific options: none (must use the module's CMakeLists.txt file)
+# @click.option('--cxx-compiler'
+#     , help="CMake: specify the C++ compiler (sets CMAKE_CXX_COMPILER)."
+#     , default=''
+#               )
+# @click.option('--cxx-flags'
+#     , help="CMake: set CMAKE_CXX_FLAGS_<built_type> to <cxx_flags>."
+#     , default=''
+#               )
+# @click.option('--cxx-flags-all'
+#     , help="CMake: set CMAKE_CXX_FLAGS_<built_type> to <cxx_flags>."
+#     , default=''
+#               )
 # Other options
 @click.option('--clean'
     , help="Perform a clean build."
@@ -396,8 +396,8 @@ def main(
         f90flags, opt, arch,
         debug, noopt, noarch,
         # Cpp specific options
-        cxx_compiler,
-        cxx_flags, cxx_flags_all,
+        # cxx_compiler,
+        # cxx_flags, cxx_flags_all,
         # Other options
         clean,
         soft_link,
@@ -456,15 +456,15 @@ def main(
 
             cpp = {}
             cpp['CMAKE_BUILD_TYPE'] = build_type
-            if cxx_compiler:
-                path_to_cxx_compiler = Path(cxx_compiler).resolve()
-                if not path_to_cxx_compiler.exists():
-                    raise FileNotFoundError(f"C++ compiler {path_to_cxx_compiler} not found.")
-                cpp['CMAKE_CXX_COMPILER'] = str(path_to_cxx_compiler)
-            if cxx_flags:
-                cpp[f"CMAKE_CXX_FLAGS_{build_type}"] = check_cxx_flags(cxx_flags, "--cxx-flags")
-            if cxx_flags_all:
-                cpp["CMAKE_CXX_FLAGS"] = check_cxx_flags(cxx_flags_all, "--cxx-flags-all")
+            # if cxx_compiler:
+            #     path_to_cxx_compiler = Path(cxx_compiler).resolve()
+            #     if not path_to_cxx_compiler.exists():
+            #         raise FileNotFoundError(f"C++ compiler {path_to_cxx_compiler} not found.")
+            #     cpp['CMAKE_CXX_COMPILER'] = str(path_to_cxx_compiler)
+            # if cxx_flags:
+            #     cpp[f"CMAKE_CXX_FLAGS_{build_type}"] = check_cxx_flags(cxx_flags, "--cxx-flags")
+            # if cxx_flags_all:
+            #     cpp["CMAKE_CXX_FLAGS"] = check_cxx_flags(cxx_flags_all, "--cxx-flags-all")
             build_options.cpp = cpp
 
         project.options.module_to_build = module
