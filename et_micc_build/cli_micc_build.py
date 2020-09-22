@@ -191,7 +191,8 @@ def build_binary_extension(options):
                 output_dir = options.module_srcdir_path
                 built = output_dir / binary_extension
                 build_dir = output_dir / '_f2py_build'
-                shutil.rmtree(build_dir)
+                if build_options.cleanup:
+                    shutil.rmtree(build_dir)
 
         elif options.module_kind == 'cpp':
             output_dir = options.module_srcdir_path / '_cmake_build'
@@ -223,7 +224,8 @@ def build_binary_extension(options):
                     build_logger.debug(f">>> shutil.copyfile( '{built}', '{destination}' )\n")
                     built = shutil.move(built,
                                         options.module_srcdir_path / binary_extension)  # move returns destination
-                    shutil.rmtree(build_dir)
+                    if build_options.cleanup:
+                        shutil.rmtree(build_dir)
 
         if exit_code==0:
             cmds = ['ln', '-sf', str(built), str(destination)]
@@ -325,6 +327,11 @@ def build_cmd(project):
            "DEBUG, MINSIZEREL, RELEASE, RELWITHDEBINFO."
     , default='RELEASE'
               )
+@click.option('--cleanup'
+    , help="Cleanup build directory after successful build."
+    , default=False, is_flag=True
+              )
+
 # F2py specific options
 @click.option('--f90exec'
     , help="F2py: Specify the path to F90 compiler."
@@ -391,6 +398,7 @@ def main(
         project_path,
         module,
         build_type,
+        cleanup,
         # F2py specific options
         f90exec,
         f90flags, opt, arch,
@@ -425,6 +433,7 @@ def main(
     project = Project(options)
     with et_micc.logger.logtime(options):
         build_options = SimpleNamespace(build_type=build_type.upper())
+        build_options.cleanup = cleanup
         build_options.clean = clean
         build_options.soft_link = soft_link
         build_options.save = check_load_save(save, "save")
