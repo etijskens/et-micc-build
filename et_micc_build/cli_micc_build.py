@@ -157,9 +157,6 @@ def build_binary_extension(options):
         binary_extension = options.module_name + extension_suffix
         destination = (options.package_path / binary_extension).resolve()
 
-        if build_options.clean:
-            os.remove(str(destination))
-
         # if build_options.save:
         #     with open(str(options.module_srcdir_path / build_options.save), 'w') as f:
         #         json.dump(build_options.build_tool_options, f)
@@ -198,7 +195,7 @@ def build_binary_extension(options):
             output_dir = options.module_srcdir_path / '_cmake_build'
             build_dir = output_dir
             if build_options.clean:
-                build_logger.info(f"--clean: removing {options.module_srcdir_path}/_cmake_build")
+                build_logger.info(f"--clean: shutil.removing('{output_dir}').")
                 shutil.rmtree(output_dir)
             output_dir.mkdir(parents=True, exist_ok=True)
             with et_micc.utils.in_directory(output_dir):
@@ -212,20 +209,22 @@ def build_binary_extension(options):
                 cmds = [
                     cmake_cmd,
                     ['make'],
+                    ['make', 'install']
                 ]
                 exit_code = et_micc.utils.execute(
                     cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy()
                 )
-                if exit_code == 0:
-                    built = output_dir / binary_extension
-                    if destination.exists():
-                        build_logger.debug(f">>> os.remove({destination})\n")
-                        destination.unlink()
-                    build_logger.debug(f">>> shutil.copyfile( '{built}', '{destination}' )\n")
-                    built = shutil.move(built,
-                                        options.module_srcdir_path / binary_extension)  # move returns destination
-                    if build_options.cleanup:
-                        shutil.rmtree(build_dir)
+                # if exit_code == 0:
+                #     built = output_dir / binary_extension
+                #     if destination.exists():
+                #         build_logger.debug(f">>> os.remove({destination})\n")
+                #         destination.unlink()
+                #     build_logger.debug(f">>> shutil.copyfile( '{built}', '{destination}' )\n")
+                #     built = shutil.move(built,
+                #                         options.module_srcdir_path / binary_extension)  # move returns destination
+                if build_options.cleanup:
+                    build_logger.info(f"--cleanup: shutil.removing('{build_dir}').")
+                    shutil.rmtree(build_dir)
 
         if exit_code==0:
             cmds = ['ln', '-sf', str(built), str(destination)]
