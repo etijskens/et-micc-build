@@ -70,7 +70,9 @@ def check_cxx_flags(cxx_flags, cli_option):
 def path_to_cmake_tools():
     """Return the path to the folder with the CMake tools."""
 
-    p = (Path(__file__) / '..' / 'cmake_tools').resolve()
+    # p = (Path(__file__) / '..' / 'cmake_tools').resolve()
+    p = (Path(__file__) / '..' / '..' / 'pybind11' / 'share' / 'cmake' / 'pybind11').resolve()
+
     return str(p)
 
 
