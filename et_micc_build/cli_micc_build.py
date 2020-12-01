@@ -226,11 +226,11 @@ def build_binary_extension(options):
                     build_logger.info(f"--cleanup: shutil.removing('{build_dir}').")
                     shutil.rmtree(build_dir)
 
-        if exit_code==0:
-            cmds = ['ln', '-sf', str(built), str(destination)]
-            et_micc.utils.execute(
-                cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy()
-            )
+        # if exit_code==0:
+        #     cmds = ['ln', '-sf', str(built), str(destination)]
+        #     et_micc.utils.execute(
+        #         cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy()
+        #     )
 
         if build_options.save:
             with (options.module_srcdir_path / build_options.save).open('w') as f:
