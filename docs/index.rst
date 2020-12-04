@@ -11,6 +11,7 @@ Welcome to et-micc-build's documentation!
    apps
    api
    authors
+   changelog
 
 ##################
 Indices and tables
