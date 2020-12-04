@@ -172,28 +172,7 @@ def build_binary_extension(options):
             else:
                 build_logger.info(f"Building using default build options.")
 
-        if options.module_kind == 'f2py':
-            f2py_args = []
-            for arg, val in build_options.build_tool_options.items():
-                if val is None:
-                    # this is a flag
-                    f2py_args.append(arg)
-                else:
-                    f2py_args.append(f"{arg}=\"{val}\"")
-
-            with et_micc.utils.in_directory(options.module_srcdir_path):
-                if build_options.clean:
-                    build_logger.info(f"--clean: removing {options.module_srcdir_path}/_f2py_build")
-                    shutil.rmtree('_f2py_build')
-                exit_code = build_f2py(options.module_name, args=f2py_args)
-            if exit_code == 0:
-                output_dir = options.module_srcdir_path
-                built = output_dir / binary_extension
-                build_dir = output_dir / '_f2py_build'
-                if build_options.cleanup:
-                    shutil.rmtree(build_dir)
-
-        elif options.module_kind == 'cpp':
+        if options.module_kind in ('cpp','f2py') and (options.module_srcdir_path / 'CMakeLists.txt').exists():
             output_dir = options.module_srcdir_path / '_cmake_build'
             build_dir = output_dir
             if build_options.clean:
@@ -216,23 +195,31 @@ def build_binary_extension(options):
                 exit_code = et_micc.utils.execute(
                     cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy()
                 )
-                # if exit_code == 0:
-                #     built = output_dir / binary_extension
-                #     if destination.exists():
-                #         build_logger.debug(f">>> os.remove({destination})\n")
-                #         destination.unlink()
-                #     build_logger.debug(f">>> shutil.copyfile( '{built}', '{destination}' )\n")
-                #     built = shutil.move(built,
-                #                         options.module_srcdir_path / binary_extension)  # move returns destination
                 if build_options.cleanup:
                     build_logger.info(f"--cleanup: shutil.removing('{build_dir}').")
                     shutil.rmtree(build_dir)
 
-        # if exit_code==0:
-        #     cmds = ['ln', '-sf', str(built), str(destination)]
-        #     et_micc.utils.execute(
-        #         cmds, build_logger.debug, stop_on_error=True, env=os.environ.copy()
-        #     )
+        elif options.module_kind == 'f2py':
+            # the old way, i.e. without CMakeLists.txt file (deprecated)
+            f2py_args = []
+            for arg, val in build_options.build_tool_options.items():
+                if val is None:
+                    # this is a flag
+                    f2py_args.append(arg)
+                else:
+                    f2py_args.append(f"{arg}=\"{val}\"")
+
+            with et_micc.utils.in_directory(options.module_srcdir_path):
+                if build_options.clean:
+                    build_logger.info(f"--clean: removing {options.module_srcdir_path}/_f2py_build")
+                    shutil.rmtree('_f2py_build')
+                exit_code = build_f2py(options.module_name, args=f2py_args)
+            if exit_code == 0:
+                output_dir = options.module_srcdir_path
+                built = output_dir / binary_extension
+                build_dir = output_dir / '_f2py_build'
+                if build_options.cleanup:
+                    shutil.rmtree(build_dir)
 
         if build_options.save:
             with (options.module_srcdir_path / build_options.save).open('w') as f:
