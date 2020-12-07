@@ -453,15 +453,6 @@ def main(
 
             cpp = {}
             cpp['CMAKE_BUILD_TYPE'] = build_type
-            # if cxx_compiler:
-            #     path_to_cxx_compiler = Path(cxx_compiler).resolve()
-            #     if not path_to_cxx_compiler.exists():
-            #         raise FileNotFoundError(f"C++ compiler {path_to_cxx_compiler} not found.")
-            #     cpp['CMAKE_CXX_COMPILER'] = str(path_to_cxx_compiler)
-            # if cxx_flags:
-            #     cpp[f"CMAKE_CXX_FLAGS_{build_type}"] = check_cxx_flags(cxx_flags, "--cxx-flags")
-            # if cxx_flags_all:
-            #     cpp["CMAKE_CXX_FLAGS"] = check_cxx_flags(cxx_flags_all, "--cxx-flags-all")
             build_options.cpp = cpp
 
         project.options.module_to_build = module
