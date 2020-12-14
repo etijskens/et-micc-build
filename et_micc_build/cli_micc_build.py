@@ -48,7 +48,7 @@ def auto_build_binary_extension(package_path, module_to_build):
         ),
         verbosity=1,
     )
-    for module_prefix in ["cpp", "f2py"]:
+    for module_prefix in ["cpp", "f90"]:
         module_srcdir_path = package_path / f"{module_prefix}_{options.module_name}"
         if module_srcdir_path.exists():
             options.module_kind = module_prefix
@@ -91,7 +91,7 @@ def build_binary_extension(options):
         binary_extension = options.module_name + extension_suffix
         destination = (options.package_path / binary_extension).resolve()
 
-        if options.module_kind in ('cpp', 'f2py') and (options.module_srcdir_path / 'CMakeLists.txt').exists():
+        if options.module_kind in ('cpp', 'f90') and (options.module_srcdir_path / 'CMakeLists.txt').exists():
             output_dir = options.module_srcdir_path / '_cmake_build'
             build_dir = output_dir
             if build_options.clean:
@@ -130,10 +130,10 @@ def build_binary_extension(options):
 
 def build_cmd(project):
     """
-    Build binary extensions, i.e. f2py modules and cpp modules.
+    Build binary extensions, i.e. f90 modules and cpp modules.
 
     :param str module_to_build: name of the only module to build (the prefix
-        ``cpp_`` or ``f2py_`` may be omitted). If not provided, all binrary
+        ``cpp_`` or ``f90_`` may be omitted). If not provided, all binrary
         extensions are built.
     :param types.SimpleNamespace options: namespace object with
         options accepted by (almost) all et_micc commands. Relevant attributes are
@@ -159,7 +159,7 @@ def build_cmd(project):
     failed = []
     for d in dirs:
         if ((package_path / d).is_dir()
-                and (d.startswith("f2py_") or d.startswith("cpp_"))
+                and (d.startswith("f90_") or d.startswith("cpp_"))
         ):
             if project.options.module_to_build and not d.endswith(project.options.module_to_build):
                 # build only module module_to_build.
@@ -206,7 +206,7 @@ def build_cmd(project):
               )
 @click.option('-m', '--module'
     , help="Build only this module. The module kind prefix (``cpp_`` "
-           "for C++ modules, ``f2py_`` for Fortran modules) may be omitted."
+           "for C++ modules, ``f90_`` for Fortran modules) may be omitted."
     , default=''
               )
 @click.option('-b', '--build-type'
@@ -230,7 +230,7 @@ def main(verbosity
          , cleanup
          , clean
          ):
-    """Build binary extension libraries (f2py and cpp modules)."""
+    """Build binary extension libraries (f90 and cpp modules)."""
 
     options = SimpleNamespace(
         verbosity=verbosity,
