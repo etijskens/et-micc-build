@@ -41,10 +41,8 @@ def auto_build_binary_extension(package_path, module_to_build):
         package_path=package_path,
         module_name=module_to_build,
         build_options=SimpleNamespace(
-            clean=False,
-            save="",
-            load="build_options",
-            soft_link=True,
+            clean=True,
+            cleanup=True
         ),
         verbosity=1,
     )
@@ -94,7 +92,7 @@ def build_binary_extension(options):
         if options.module_kind in ('cpp', 'f90') and (options.module_srcdir_path / 'CMakeLists.txt').exists():
             output_dir = options.module_srcdir_path / '_cmake_build'
             build_dir = output_dir
-            if build_options.clean:
+            if build_options.clean and output_dir.exists():
                 build_logger.info(f"--clean: shutil.removing('{output_dir}').")
                 shutil.rmtree(output_dir)
             output_dir.mkdir(parents=True, exist_ok=True)
@@ -105,9 +103,6 @@ def build_binary_extension(options):
 
                 if options.module_kind == 'cpp':
                     cmake_cmd.extend(['-D', f"pybind11_DIR={path_to_cmake_tools()}"])
-
-                for key, val in build_options.cmake.items():
-                    cmake_cmd.extend(['-D', f"{key}={val}"])
 
                 cmake_cmd.append('..')
 
